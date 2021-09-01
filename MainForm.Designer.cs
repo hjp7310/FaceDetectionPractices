@@ -31,7 +31,7 @@ namespace FaceDetectionPractices
         {
             this.start_button = new System.Windows.Forms.Button();
             this.stop_button = new System.Windows.Forms.Button();
-            this.listBox = new System.Windows.Forms.ListBox();
+            this.textBox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // start_button
@@ -54,27 +54,29 @@ namespace FaceDetectionPractices
             this.stop_button.UseVisualStyleBackColor = true;
             this.stop_button.Click += new System.EventHandler(this.stop_button_Click);
             // 
-            // listBox
+            // textBox
             // 
-            this.listBox.FormattingEnabled = true;
-            this.listBox.ItemHeight = 15;
-            this.listBox.Location = new System.Drawing.Point(12, 12);
-            this.listBox.Name = "listBox";
-            this.listBox.Size = new System.Drawing.Size(610, 424);
-            this.listBox.TabIndex = 2;
+            this.textBox.Location = new System.Drawing.Point(12, 12);
+            this.textBox.Multiline = true;
+            this.textBox.Name = "textBox";
+            this.textBox.Size = new System.Drawing.Size(610, 426);
+            this.textBox.TabIndex = 2;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.listBox);
+            this.Controls.Add(this.textBox);
             this.Controls.Add(this.stop_button);
             this.Controls.Add(this.start_button);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "MainForm";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -82,7 +84,7 @@ namespace FaceDetectionPractices
 
         private System.Windows.Forms.Button start_button;
         private System.Windows.Forms.Button stop_button;
-        private System.Windows.Forms.ListBox listBox;
+        private System.Windows.Forms.TextBox textBox;
     }
 }
 

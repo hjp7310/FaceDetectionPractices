@@ -60,6 +60,9 @@
     <Reference Include="DlibDotNet, Version=19.21.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\DlibDotNet.19.21.0.20210302\lib\netstandard2.0\DlibDotNet.dll</HintPath>
     </Reference>
+    <Reference Include="DlibDotNet.Extensions, Version=19.18.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\DlibDotNet.Extensions.19.18.0.20200428\lib\net461\DlibDotNet.Extensions.dll</HintPath>
+    </Reference>
     <Reference Include="OpenCvSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=6adad1e807fea099, processorArchitecture=MSIL">
       <HintPath>packages\OpenCvSharp4.4.1.1.20191216\lib\net461\OpenCvSharp.dll</HintPath>
     </Reference>
@@ -94,6 +97,7 @@
     <Compile Include="CamForm.Designer.cs">
       <DependentUpon>CamForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="FaceDetection.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

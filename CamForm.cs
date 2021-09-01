@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -15,7 +16,22 @@ namespace FaceDetectionPractices
 {
     public partial class CamForm : Form
     {
+        public event EventHandler coordinateChanged;
+
         private readonly VideoCapture videoCapture;
+
+        private Tuple<int, int> _coordinate;
+        public Tuple<int, int> coordinate
+        {
+            get { return this._coordinate; }
+            set { lock (this) { 
+                    this._coordinate = value;
+                }
+                EventArgs args = new EventArgs();
+                this.coordinateChanged(null, args);
+            }
+        }
+
         public CamForm()
         {
             InitializeComponent();
@@ -51,7 +67,17 @@ namespace FaceDetectionPractices
             {
                 using (var frame_mat = videoCapture.RetrieveMat())
                 {
-                    var frame_bitmap = BitmapConverter.ToBitmap(frame_mat);
+                    Bitmap frame_bitmap = BitmapConverter.ToBitmap(frame_mat);
+                    Graphics grp = Graphics.FromImage(frame_bitmap);
+
+                    var faces = FaceDetection.FaceCoordinate(frame_mat);
+                    foreach (var face in faces)
+                    {
+                        var rect = new Rectangle(face.Left, face.Top, face.Right - face.Left, face.Bottom - face.Top);
+                        grp.DrawRectangle(new Pen(Color.Red), rect);
+                        this.coordinate = new Tuple<int, int>(face.Center.X, face.Center.Y);
+                    }
+
                     bg_worker.ReportProgress(0, frame_bitmap);
                 }
                 Thread.Sleep(100);
