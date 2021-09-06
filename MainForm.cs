@@ -43,7 +43,7 @@ namespace FaceDetectionPractices
 
         private void UpdateTextBox(object sender, EventArgs e)
         {
-            textBox?.Invoke((MethodInvoker)delegate ()
+            textBox?.Invoke((MethodInvoker) delegate ()
             {
                 textBox.AppendText(CamForm?.coordinate.Item1.ToString() + ", " + CamForm?.coordinate.Item2.ToString() + " \r\n");
             });

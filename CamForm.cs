@@ -18,7 +18,8 @@ namespace FaceDetectionPractices
     {
         public event EventHandler coordinateChanged;
 
-        private readonly VideoCapture videoCapture;
+        private FaceDetection faceDetection;
+        private VideoCapture videoCapture;
 
         private Tuple<int, int> _coordinate;
         public Tuple<int, int> coordinate
@@ -32,14 +33,18 @@ namespace FaceDetectionPractices
             }
         }
 
+        private System.Drawing.Point point;
+
         public CamForm()
         {
             InitializeComponent();
-            videoCapture = new VideoCapture();
         }
 
         private void CamForm_Load(object sender, EventArgs e)
         {
+            faceDetection = new FaceDetection();
+
+            videoCapture = new VideoCapture();
             videoCapture.Open(0, VideoCaptureAPIs.ANY);
             if(!videoCapture.IsOpened())
             {
@@ -67,18 +72,20 @@ namespace FaceDetectionPractices
             {
                 using (var frame_mat = videoCapture.RetrieveMat())
                 {
-                    Bitmap frame_bitmap = BitmapConverter.ToBitmap(frame_mat);
-                    Graphics grp = Graphics.FromImage(frame_bitmap);
+                    //Bitmap frame_bitmap = BitmapConverter.ToBitmap(frame_mat);
+                    //Graphics grp = Graphics.FromImage(frame_bitmap);
+                    //
+                    //var faces = faceDetection.FaceCoordinate(frame_mat);
+                    //foreach (var face in faces)
+                    //{
+                    //    var rect = new Rectangle(face.Left, face.Top, face.Right - face.Left, face.Bottom - face.Top);
+                    //    grp.DrawRectangle(new Pen(Color.Red), rect);
+                    //    this.coordinate = new Tuple<int, int>(face.Center.X, face.Center.Y);
+                    //}
+                    //
+                    //bg_worker.ReportProgress(0, frame_bitmap);
 
-                    var faces = FaceDetection.FaceCoordinate(frame_mat);
-                    foreach (var face in faces)
-                    {
-                        var rect = new Rectangle(face.Left, face.Top, face.Right - face.Left, face.Bottom - face.Top);
-                        grp.DrawRectangle(new Pen(Color.Red), rect);
-                        this.coordinate = new Tuple<int, int>(face.Center.X, face.Center.Y);
-                    }
-
-                    bg_worker.ReportProgress(0, frame_bitmap);
+                    bg_worker.ReportProgress(0, BitmapConverter.ToBitmap(faceDetection.HeadPosition(frame_mat)));
                 }
                 Thread.Sleep(100);
             }
