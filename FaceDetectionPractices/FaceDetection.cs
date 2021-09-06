@@ -24,9 +24,7 @@ namespace FaceDetectionPractices
 
         public Mat HeadPosition(Mat img)
         {
-            byte[] array = new byte[img.Width * img.Height * img.ElemSize()];
-            Marshal.Copy(img.Data, array, 0, array.Length);
-            Array2D<BgrPixel> cimg = Dlib.LoadImageData<BgrPixel>(array, (uint)img.Height, (uint)img.Width, (uint)(img.Width * img.ElemSize()));
+            Array2D<RgbPixel> cimg = MatToRgbArray2D(img);
 
             var faces = this.faceDetector.Operator(cimg);
             List<FullObjectDetection> shapes = new List<FullObjectDetection>();
@@ -92,9 +90,7 @@ namespace FaceDetectionPractices
 
         public Mat FaceCoordinate(Mat img)
         {
-            byte[] array = new byte[img.Width * img.Height * img.ElemSize()];
-            Marshal.Copy(img.Data, array, 0, array.Length);
-            Array2D<RgbPixel> cimg = Dlib.LoadImageData<RgbPixel>(array, (uint)img.Height, (uint)img.Width, (uint)(img.Width * img.ElemSize()));
+            Array2D<RgbPixel> cimg = MatToRgbArray2D(img);
 
             var faces = this.faceDetector.Operator(cimg);
             foreach (var face in faces)
@@ -104,6 +100,14 @@ namespace FaceDetectionPractices
 
             cimg.Dispose();
             return img;
+        }
+
+        private Array2D<RgbPixel> MatToRgbArray2D(Mat img)
+        {
+            byte[] array = new byte[img.Width * img.Height * img.ElemSize()];
+            Marshal.Copy(img.Data, array, 0, array.Length);
+            Array2D<RgbPixel> cimg = Dlib.LoadImageData<RgbPixel>(array, (uint)img.Height, (uint)img.Width, (uint)(img.Width * img.ElemSize()));
+            return cimg;
         }
     }
 }

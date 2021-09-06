@@ -44,7 +44,7 @@ namespace FaceDetectionPractices
 
             videoCapture = new VideoCapture();
             videoCapture.Open(0, VideoCaptureAPIs.ANY);
-            if(!videoCapture.IsOpened())
+            if (!videoCapture.IsOpened())
             {
                 Close();
                 return;
@@ -59,7 +59,7 @@ namespace FaceDetectionPractices
         private void CamForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             backgroundWorker.CancelAsync();
-            videoCapture.Dispose();
+            videoCapture?.Dispose();
         }
 
         private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
