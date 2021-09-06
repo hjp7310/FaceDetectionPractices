@@ -33,8 +33,6 @@ namespace FaceDetectionPractices
             }
         }
 
-        private System.Drawing.Point point;
-
         public CamForm()
         {
             InitializeComponent();
