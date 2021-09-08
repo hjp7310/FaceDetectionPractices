@@ -21,12 +21,15 @@ namespace FaceDetectionPractices
         private FaceDetection faceDetection;
         private VideoCapture videoCapture;
 
-        private Tuple<int, int> _coordinate;
-        public Tuple<int, int> coordinate
+        private FaceInfo _faceInfo;
+        public FaceInfo faceInfo
         {
-            get { return this._coordinate; }
-            set { lock (this) { 
-                    this._coordinate = value;
+            get { return this._faceInfo; }
+            set
+            {
+                lock (this)
+                {
+                    this._faceInfo = value;
                 }
                 EventArgs args = new EventArgs();
                 this.coordinateChanged(null, args);
@@ -40,17 +43,17 @@ namespace FaceDetectionPractices
 
         private void CamForm_Load(object sender, EventArgs e)
         {
-            faceDetection = new FaceDetection();
+            this.faceDetection = new FaceDetection();
 
-            videoCapture = new VideoCapture();
-            videoCapture.Open(0, VideoCaptureAPIs.ANY);
+            this.videoCapture = new VideoCapture();
+            this.videoCapture.Open(0, VideoCaptureAPIs.ANY);
             if (!videoCapture.IsOpened())
             {
                 Close();
                 return;
             }
 
-            pictureBox.Size = new System.Drawing.Size(videoCapture.FrameWidth, videoCapture.FrameHeight);
+            pictureBox.Size = new System.Drawing.Size(this.videoCapture.FrameWidth, this.videoCapture.FrameHeight);
             ClientSize = new System.Drawing.Size(pictureBox.Width + 20, pictureBox.Height + 20);
             StartPosition = FormStartPosition.CenterScreen;
             backgroundWorker.RunWorkerAsync();
@@ -59,31 +62,23 @@ namespace FaceDetectionPractices
         private void CamForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             backgroundWorker.CancelAsync();
-            videoCapture?.Dispose();
+            this.videoCapture?.Dispose();
         }
 
         private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             var bg_worker = (BackgroundWorker)sender;
 
-            while(!bg_worker.CancellationPending)
+            while (!bg_worker.CancellationPending)
             {
-                using (var frame_mat = videoCapture.RetrieveMat())
+                using (var frame_mat = this.videoCapture.RetrieveMat())
                 {
-                    //Bitmap frame_bitmap = BitmapConverter.ToBitmap(frame_mat);
-                    //Graphics grp = Graphics.FromImage(frame_bitmap);
-                    //
-                    //var faces = faceDetection.FaceCoordinate(frame_mat);
-                    //foreach (var face in faces)
-                    //{
-                    //    var rect = new Rectangle(face.Left, face.Top, face.Right - face.Left, face.Bottom - face.Top);
-                    //    grp.DrawRectangle(new Pen(Color.Red), rect);
-                    //    this.coordinate = new Tuple<int, int>(face.Center.X, face.Center.Y);
-                    //}
-                    //
-                    //bg_worker.ReportProgress(0, frame_bitmap);
-
-                    bg_worker.ReportProgress(0, BitmapConverter.ToBitmap(faceDetection.HeadPosition(frame_mat)));
+                    FaceInfo faceInfo = this.faceDetection.HeadPoseEstimate(frame_mat);
+                    if (faceInfo.coordinates != null && faceInfo.directions != null)
+                    {
+                        this.faceInfo = faceInfo;
+                    }
+                    bg_worker.ReportProgress(0, BitmapConverter.ToBitmap(faceInfo.img));
                 }
                 Thread.Sleep(100);
             }

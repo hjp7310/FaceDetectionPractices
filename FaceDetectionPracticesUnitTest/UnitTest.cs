@@ -10,12 +10,12 @@ namespace FaceDetectionPracticesUnitTest
     public class UnitTest
     {
         [TestMethod]
-        public void HeadPositionTest()
+        public void HeadPoseEstimateTest()
         {
             Mat img = Cv2.ImRead("img.jpg");
             var faceDetection = new FaceDetection();
-            faceDetection.HeadPosition(img);
-            img.SaveImage(@"output_HeadPosition.jpg");
+            faceDetection.HeadPoseEstimate(img);
+            img.SaveImage(@"output_HeadPoseEstimate.jpg");
         }
 
         [TestMethod]

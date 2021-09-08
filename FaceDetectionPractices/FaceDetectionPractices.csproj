@@ -107,6 +107,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Type.cs" />
     <EmbeddedResource Include="CamForm.resx">
       <DependentUpon>CamForm.cs</DependentUpon>
     </EmbeddedResource>

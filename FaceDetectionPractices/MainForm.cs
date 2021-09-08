@@ -43,10 +43,17 @@ namespace FaceDetectionPractices
 
         private void UpdateTextBox(object sender, EventArgs e)
         {
-            textBox?.Invoke((MethodInvoker) delegate ()
-            {
-                textBox.AppendText(CamForm?.coordinate.Item1.ToString() + ", " + CamForm?.coordinate.Item2.ToString() + " \r\n");
-            });
+            textBox?.Invoke((MethodInvoker)delegate ()
+          {
+              foreach (var coordinate in CamForm?.faceInfo.coordinates)
+              {
+                  textBox.AppendText("(" + coordinate.X.ToString() + ", " + coordinate.Y.ToString() + ") ");
+              }
+              foreach (var direction in CamForm?.faceInfo.directions)
+              {
+                  textBox.AppendText("Head Pose " + direction.ToString() + " \r\n");
+              }
+          });
         }
     }
 }
