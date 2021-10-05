@@ -22,10 +22,10 @@ namespace FaceDetectionPractices
             poseModel = ShapePredictor.Deserialize("shape_predictor_68_face_landmarks.dat");
         }
 
-        public FaceInfo HeadPoseEstimate(Mat img, bool is_multiple_faces = true)
+        public FaceInfo HeadPoseEstimate(Mat img, bool isMultipleFaces = true)
         {
             Array2D<RgbPixel> cimg = MatToRgbArray2D(img);
-            FaceInfo face_info = new FaceInfo();
+            FaceInfo faceInfo = new FaceInfo();
 
             var faces = this.faceDetector.Operator(cimg);
             List<FullObjectDetection> shapes = new List<FullObjectDetection>();
@@ -33,8 +33,8 @@ namespace FaceDetectionPractices
             foreach (var face in faces)
             {
                 shapes.Add(this.poseModel.Detect(cimg, face));
-                face_info.coordinates.Add(new System.Drawing.Point(face.Center.X, face.Center.Y));
-                if (is_multiple_faces == false)
+                faceInfo.coordinates.Add(new System.Drawing.Point(face.Center.X, face.Center.Y));
+                if (isMultipleFaces == false)
                 {
                     break;
                 }
@@ -52,76 +52,76 @@ namespace FaceDetectionPractices
             {
                 foreach (var shape in shapes)
                 {
-                    List<Point2f> image_points = new List<Point2f>();
-                    image_points.Add(new Point2f(shape.GetPart(30).X, shape.GetPart(30).Y));    // Nose tip
-                    image_points.Add(new Point2f(shape.GetPart(8).X, shape.GetPart(8).Y));      // Chin
-                    image_points.Add(new Point2f(shape.GetPart(36).X, shape.GetPart(36).Y));    // Left eye left corner
-                    image_points.Add(new Point2f(shape.GetPart(45).X, shape.GetPart(45).Y));    // Right eye right corner
-                    image_points.Add(new Point2f(shape.GetPart(48).X, shape.GetPart(48).Y));    // Left Mouth corner
-                    image_points.Add(new Point2f(shape.GetPart(54).X, shape.GetPart(54).Y));    // Right mouth corner
+                    Point2f[] imagePoints = new Point2f[] {
+                        new Point2f(shape.GetPart(30).X, shape.GetPart(30).Y),      // Nose tip
+                        new Point2f(shape.GetPart(8).X, shape.GetPart(8).Y),        // Chin
+                        new Point2f(shape.GetPart(36).X, shape.GetPart(36).Y),      // Left eye left corner
+                        new Point2f(shape.GetPart(45).X, shape.GetPart(45).Y),      // Right eye right corner
+                        new Point2f(shape.GetPart(48).X, shape.GetPart(48).Y),      // Left Mouth corner
+                        new Point2f(shape.GetPart(54).X, shape.GetPart(54).Y),      // Right mouth corner
+                    };
 
-                    List<Point3f> model_points = new List<Point3f>();
-                    model_points.Add(new Point3f(0.0f, 0.0f, 0.0f));            // Nose tip
-                    model_points.Add(new Point3f(0.0f, -330.0f, -65.0f));       // Chin
-                    model_points.Add(new Point3f(-225.0f, 170.0f, -135.0f));    // Left eye left corner
-                    model_points.Add(new Point3f(225.0f, 170.0f, -135.0f));     // Right eye right corner
-                    model_points.Add(new Point3f(-150.0f, -150.0f, -125.0f));   // Left Mouth corner
-                    model_points.Add(new Point3f(150.0f, -150.0f, -125.0f));    // Right mouth corner
+                    Point3f[] modelPoints = new Point3f[] {
+                        new Point3f(0.0f, 0.0f, 0.0f),              // Nose tip
+                        new Point3f(0.0f, -330.0f, -65.0f),         // Chin
+                        new Point3f(-225.0f, 170.0f, -135.0f),      // Left eye left corner
+                        new Point3f(225.0f, 170.0f, -135.0f),       // Right eye right corner
+                        new Point3f(-150.0f, -150.0f, -125.0f),     // Left Mouth corner
+                        new Point3f(150.0f, -150.0f, -125.0f)       // Right mouth corner
+                    };
 
-                    double focal_length = img.Cols;
+                    double focalLength = img.Cols;
                     Point2f center = new Point2f(img.Cols / 2, img.Rows / 2);
-                    double[,] camera_matrix = new double[3, 3] { { focal_length, 0, center.X }, { 0, focal_length, center.Y }, { 0, 0, 1 } };
-                    List<double> dist_coeffs = new List<double>() { 0, 0, 0, 0 };
+                    double[,] cameraMatrix = new double[3, 3] { { focalLength, 0, center.X }, { 0, focalLength, center.Y }, { 0, 0, 1 } };
+                    double[] distCoeffs = new double[] { 0, 0, 0, 0 };
 
-                    double[] rotation_vector = { 0, 0, 0 };
-                    double[] translation_vector = { 0, 0, 0 };
+                    double[] rotationVector = { 0, 0, 0 };
+                    double[] translationVector = { 0, 0, 0 };
 
-                    Cv2.SolvePnP(model_points, image_points, camera_matrix, dist_coeffs, ref rotation_vector, ref translation_vector);
+                    Cv2.SolvePnP(modelPoints, imagePoints, cameraMatrix, distCoeffs, ref rotationVector, ref translationVector);
 
-                    List<Point3f> nose_end_point3d = new List<Point3f>();
-                    Point2f[] nose_end_point2d;
-
-                    nose_end_point3d.Add(new Point3f(0f, 0f, 1000.0f));
+                    Point3f[] noseEndPoint3D = new Point3f[] { new Point3f(0f, 0f, 1000.0f) };
+                    Point2f[] noseEndPoint2D;
                     double[,] jacobian;
-                    Cv2.ProjectPoints(nose_end_point3d, rotation_vector, translation_vector, camera_matrix, dist_coeffs.ToArray(), out nose_end_point2d, out jacobian);
+                    Cv2.ProjectPoints(noseEndPoint3D, rotationVector, translationVector, cameraMatrix, distCoeffs.ToArray(), out noseEndPoint2D, out jacobian);
 
-                    for (int i = 0; i < image_points.Count; i++)
+                    for (int i = 0; i < imagePoints.Length; i++)
                     {
-                        Cv2.Circle(img, new OpenCvSharp.Point(image_points[i].X, image_points[i].Y), 3, new Scalar(0, 0, 255), -1);
+                        Cv2.Circle(img, new OpenCvSharp.Point(imagePoints[i].X, imagePoints[i].Y), 3, new Scalar(0, 0, 255), -1);
                     }
-                    Cv2.Line(img, new OpenCvSharp.Point(image_points[0].X, image_points[0].Y), new OpenCvSharp.Point(nose_end_point2d[0].X, nose_end_point2d[0].Y), new Scalar(255, 0, 0), 2);
-                    face_info.directions.Add(PointToDirection(new System.Drawing.Point((int)image_points[0].X, (int)image_points[0].Y), new System.Drawing.Point((int)nose_end_point2d[0].X, (int)nose_end_point2d[0].Y)));
+                    Cv2.Line(img, new OpenCvSharp.Point(imagePoints[0].X, imagePoints[0].Y), new OpenCvSharp.Point(noseEndPoint2D[0].X, noseEndPoint2D[0].Y), new Scalar(255, 0, 0), 2);
+                    faceInfo.directions.Add(PointToDirection(new OpenCvSharp.Point((int)imagePoints[0].X, (int)imagePoints[0].Y), new OpenCvSharp.Point((int)noseEndPoint2D[0].X, (int)noseEndPoint2D[0].Y)));
                 }
             }
 
-            face_info.img = img;
+            faceInfo.img = img;
             cimg.Dispose();
-            return face_info;
+            return faceInfo;
         }
 
-        public FaceInfo FaceCoordinate(Mat img, bool is_multiple_faces = true)
+        public FaceInfo FaceCoordinate(Mat img, bool isMultipleFaces = true)
         {
             Array2D<RgbPixel> cimg = MatToRgbArray2D(img);
-            FaceInfo face_info = new FaceInfo();
+            FaceInfo faceInfo = new FaceInfo();
 
             var faces = this.faceDetector.Operator(cimg);
             foreach (var face in faces)
             {
                 Cv2.Rectangle(img, new OpenCvSharp.Point(face.TopLeft.X, face.TopLeft.Y), new OpenCvSharp.Point(face.BottomRight.X, face.BottomRight.Y), new Scalar(0, 0, 255), 1);
-                face_info.coordinates.Add(new System.Drawing.Point(face.Center.X, face.Center.Y));
-                face_info.directions.Add(PointToDirection(new System.Drawing.Point((int)(img.Cols / 2), (int)(img.Rows / 2)), new System.Drawing.Point(face.Center.X, face.Center.Y)));
-                if (is_multiple_faces == false)
+                faceInfo.coordinates.Add(new System.Drawing.Point(face.Center.X, face.Center.Y));
+                faceInfo.directions.Add(PointToDirection(new OpenCvSharp.Point((int)(img.Cols / 2), (int)(img.Rows / 2)), new OpenCvSharp.Point(face.Center.X, face.Center.Y)));
+                if (isMultipleFaces == false)
                 {
                     break;
                 }
             }
 
-            face_info.img = img;
+            faceInfo.img = img;
             cimg.Dispose();
-            return face_info;
+            return faceInfo;
         }
 
-        public FaceInfo EyeTrack(Mat img, bool is_multiple_faces = true)
+        public FaceInfo EyeTrack(Mat img, bool isMultipleFaces = true)
         {
             Array2D<RgbPixel> cimg = MatToRgbArray2D(img);
             FaceInfo faceInfo = new FaceInfo();
@@ -133,144 +133,73 @@ namespace FaceDetectionPractices
             {
                 shapes.Add(this.poseModel.Detect(cimg, face));
                 faceInfo.coordinates.Add(new System.Drawing.Point(face.Center.X, face.Center.Y));
-                if (is_multiple_faces == false)
+                if (isMultipleFaces == false)
                 {
                     break;
                 }
             }
 
-            uint[] left_eye = new uint[] { 36, 37, 38, 39, 40, 41 };
-            uint[] right_eye = new uint[] { 42, 43, 44, 45, 46, 47 };
-            uint[] eyesIdx = new uint[] { 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47 };
-
             if (faces.Length > 0)
             {
                 foreach (var shape in shapes)
                 {
+                    OpenCvSharp.Point[] eyePointsLeft = new OpenCvSharp.Point[] {
+                        new OpenCvSharp.Point(shape.GetPart(36).X, shape.GetPart(36).Y),
+                        new OpenCvSharp.Point(shape.GetPart(37).X, shape.GetPart(37).Y),
+                        new OpenCvSharp.Point(shape.GetPart(38).X, shape.GetPart(38).Y),
+                        new OpenCvSharp.Point(shape.GetPart(39).X, shape.GetPart(39).Y),
+                        new OpenCvSharp.Point(shape.GetPart(40).X, shape.GetPart(40).Y),
+                        new OpenCvSharp.Point(shape.GetPart(41).X, shape.GetPart(41).Y)
+                    };
+
+                    OpenCvSharp.Point[] eyePointsRight = new OpenCvSharp.Point[] {
+                        new OpenCvSharp.Point(shape.GetPart(42).X, shape.GetPart(42).Y),
+                        new OpenCvSharp.Point(shape.GetPart(43).X, shape.GetPart(43).Y),
+                        new OpenCvSharp.Point(shape.GetPart(44).X, shape.GetPart(44).Y),
+                        new OpenCvSharp.Point(shape.GetPart(45).X, shape.GetPart(45).Y),
+                        new OpenCvSharp.Point(shape.GetPart(46).X, shape.GetPart(46).Y),
+                        new OpenCvSharp.Point(shape.GetPart(47).X, shape.GetPart(47).Y)
+                    };
+
                     Mat mask = Mat.Zeros(img.Size(), MatType.CV_8UC1);
-
-                    int[] end_points_left = EyeOnMask(mask, left_eye, shape);
-                    int[] end_points_right = EyeOnMask(mask, right_eye, shape);
-
+                    OpenCvSharp.Point[] endPointsLeft = EyeOnMask(mask, eyePointsLeft, shape);    //(left, top), (right, bottom)
+                    OpenCvSharp.Point[] endPointsRight = EyeOnMask(mask, eyePointsRight, shape);  //(left, top), (right, bottom)
                     Cv2.Dilate(mask, mask, Mat.Ones(9, 9, MatType.CV_8UC1));
 
-                    Mat eyes = Mat.Zeros(img.Size(), MatType.CV_8UC3);
-                    Cv2.BitwiseAnd(img, img, eyes, mask);
-                    IntPtr ptr = eyes.Data;
-                    for (int row = 0; row < eyes.Rows; row++)
-                    {
-                        for (int col = 0; col < eyes.Cols; col++)
-                        {
-                            byte b = Marshal.ReadByte(ptr, row * eyes.Cols * 3 + col * 3 + 0);
-                            byte g = Marshal.ReadByte(ptr, row * eyes.Cols * 3 + col * 3 + 1);
-                            byte r = Marshal.ReadByte(ptr, row * eyes.Cols * 3 + col * 3 + 2);
-                            if ((mask.At<UInt16>(row, col) == 0) && b == 0 && g == 0 && r == 0)
-                            {
-                                Marshal.WriteByte(ptr, row * eyes.Cols * 3 + col * 3 + 0, 255);
-                                Marshal.WriteByte(ptr, row * eyes.Cols * 3 + col * 3 + 1, 255);
-                                Marshal.WriteByte(ptr, row * eyes.Cols * 3 + col * 3 + 2, 255);
-                            }
-                        }
-                    }
-                    int mid = (int)((shape.GetPart(42).X + shape.GetPart(39).X) / 2);
-                    Mat eyes_gray = new Mat();
-                    Cv2.CvtColor(eyes, eyes_gray, ColorConversionCodes.BGR2GRAY);
-                    int threshold = 75;
-                    Mat thresh = new Mat();
-                    Cv2.Threshold(eyes_gray, thresh, threshold, 255, ThresholdTypes.Binary);
-                    ProcessThresh(thresh);
+                    Mat eyes = GrayScaleEyes(img, mask);
 
-                    OpenCvSharp.Point eyeball_pos_left = Contouring(thresh.ColRange(0, mid), mid, img, end_points_left);
-                    OpenCvSharp.Point eyeball_pos_right = Contouring(thresh.ColRange(mid, thresh.Cols), mid, img, end_points_right);
+                    Mat threshold = new Mat();
+                    int thresholdVal = 75;
+                    Cv2.Threshold(eyes, threshold, thresholdVal, 255, ThresholdTypes.Binary);
+                    ProcessThreshold(threshold);
 
-                    Direction direction_left = PointToDirection(eyeball_pos_left, end_points_left);
-                    Direction direction_right = PointToDirection(eyeball_pos_right, end_points_right);
-                    if (direction_left == direction_right)
+                    int midCol = (int)((shape.GetPart(42).X + shape.GetPart(39).X) / 2);
+                    OpenCvSharp.Point eyeballPointLeft = Contouring(threshold.ColRange(0, midCol), midCol, endPointsLeft);
+                    OpenCvSharp.Point eyeballPointRight = Contouring(threshold.ColRange(midCol, threshold.Cols), midCol, endPointsRight);
+
+                    Cv2.Circle(img, new OpenCvSharp.Point(eyeballPointLeft.X, eyeballPointLeft.Y), 4, new Scalar(255, 0, 0), 2);
+                    Cv2.Circle(img, new OpenCvSharp.Point(eyeballPointRight.X, eyeballPointRight.Y), 4, new Scalar(255, 0, 0), 2);
+
+                    Direction directionLeft = PointToDirection(eyeballPointLeft, endPointsLeft);
+                    Direction directionRight = PointToDirection(eyeballPointRight, endPointsRight);
+                    if (directionLeft == directionRight)
                     {
-                        faceInfo.directions.Add(direction_left);
+                        faceInfo.directions.Add(directionLeft);
                     }
                 }
             }
 
             foreach (var shape in shapes)
             {
-                foreach (uint eye in eyesIdx)
+                for (uint i = 0; i < 68; i++)
                 {
-                    Cv2.Circle(img, new OpenCvSharp.Point(shape.GetPart(eye).X, shape.GetPart(eye).Y), 2, new Scalar(0, 255, 0), -1);
+                    Cv2.Circle(img, new OpenCvSharp.Point(shape.GetPart(i).X, shape.GetPart(i).Y), 2, new Scalar(0, 255, 0), -1);
                 }
             }
 
             faceInfo.img = img;
             cimg.Dispose();
             return faceInfo;
-        }
-
-        private Direction PointToDirection(OpenCvSharp.Point eyeball_pos, int[] end_points)
-        {
-            double x_ratio = ((double)eyeball_pos.X - (double)end_points[0]) / ((double)end_points[2] - (double)end_points[0]);
-            double y_ratio = ((double)eyeball_pos.Y - (double)end_points[1]) / ((double)end_points[3] - (double)end_points[1]);
-
-            if (x_ratio > 0.66)
-                return Direction.Left;
-            else if (x_ratio < 0.33)
-                return Direction.Right;
-            else
-                return Direction.Center;
-        }
-
-        private OpenCvSharp.Point Contouring(Mat thresh, int mid, Mat img, int[] end_points)
-        {
-            Mat[] contours;
-            Mat none = new Mat();
-            Cv2.FindContours(thresh, out contours, none, RetrievalModes.External, ContourApproximationModes.ApproxNone);
-            int cx = (end_points[0] + end_points[2]) / 2;
-            int cy = (end_points[1] + end_points[3]) / 2;
-
-            if (contours.Length > 0)
-            {
-                double max = 0;
-                int max_idx = 0;
-                for (int i = 0; i < contours.Length; i++)
-                {
-                    double val = Cv2.ContourArea(contours[i]);
-                    if (max < val)
-                    {
-                        max = val;
-                        max_idx = i;
-                    }
-                }
-
-                Moments moments = Cv2.Moments(contours[max_idx]);
-                cx = (int)(moments.M10 / moments.M00);
-                cy = (int)(moments.M01 / moments.M00);
-
-                if (mid < end_points[0])
-                {
-                    cx += mid;
-                }
-
-                Cv2.Circle(img, new OpenCvSharp.Point(cx, cy), 4, new Scalar(0, 0, 255), 2);
-            }
-            return new OpenCvSharp.Point(cx, cy);
-        }
-
-        private void ProcessThresh(Mat thresh)
-        {
-            Cv2.Erode(thresh, thresh, null, iterations: 2);
-            Cv2.Dilate(thresh, thresh, null, iterations: 4);
-            Cv2.MedianBlur(thresh, thresh, 3);
-            Cv2.BitwiseNot(thresh, thresh);
-        }
-
-        private int[] EyeOnMask(Mat mask, uint[] eye, FullObjectDetection shape)
-        {
-            List<OpenCvSharp.Point> eye_points = new List<OpenCvSharp.Point>();
-            foreach (var point in eye)
-            {
-                eye_points.Add(new OpenCvSharp.Point(shape.GetPart(point).X, shape.GetPart(point).Y));
-            }
-            Cv2.FillConvexPoly(mask, eye_points, 255);
-            return new int[] { eye_points[0].X, (int)((eye_points[1].Y + eye_points[2].Y) / 2), eye_points[3].X, (int)((eye_points[4].Y + eye_points[5].Y) / 2) };
         }
 
         private Array2D<RgbPixel> MatToRgbArray2D(Mat img)
@@ -281,10 +210,10 @@ namespace FaceDetectionPractices
             return cimg;
         }
 
-        private Direction PointToDirection(System.Drawing.Point p1, System.Drawing.Point p2)
+        private Direction PointToDirection(OpenCvSharp.Point point1, OpenCvSharp.Point point2)
         {
             Direction direction;
-            double angle = Math.Atan2((-p2.Y) - (-p1.Y), p2.X - p1.X) * 180f / Math.PI;
+            double angle = Math.Atan2((-point2.Y) - (-point1.Y), point2.X - point1.X) * 180f / Math.PI;
 
             if (angle < 0)
             {
@@ -303,6 +232,83 @@ namespace FaceDetectionPractices
                 direction = Direction.Left;
 
             return direction;
+        }
+
+        private OpenCvSharp.Point[] EyeOnMask(Mat mask, OpenCvSharp.Point[] eyePoints, FullObjectDetection shape)
+        {
+            Cv2.FillConvexPoly(mask, eyePoints, 255);
+
+            OpenCvSharp.Point topLeft = new OpenCvSharp.Point(eyePoints[0].X, (int)((eyePoints[1].Y + eyePoints[2].Y) / 2));
+            OpenCvSharp.Point bottomRight = new OpenCvSharp.Point(eyePoints[3].X, (int)((eyePoints[4].Y + eyePoints[5].Y) / 2));
+            return new OpenCvSharp.Point[] { topLeft, bottomRight };
+        }
+
+        private Mat GrayScaleEyes(Mat img, Mat mask)
+        {
+            Mat eyes = Mat.Zeros(img.Size(), MatType.CV_8UC3);
+            Cv2.BitwiseAnd(img, img, eyes, mask);
+            IntPtr ptr = eyes.Data;
+            for (int row = 0; row < eyes.Rows; row++)
+            {
+                for (int col = 0; col < eyes.Cols; col++)
+                {
+                    byte b = Marshal.ReadByte(ptr, row * eyes.Cols * 3 + col * 3 + 0);
+                    byte g = Marshal.ReadByte(ptr, row * eyes.Cols * 3 + col * 3 + 1);
+                    byte r = Marshal.ReadByte(ptr, row * eyes.Cols * 3 + col * 3 + 2);
+                    if ((mask.At<UInt16>(row, col) == 0) && b == 0 && g == 0 && r == 0)
+                    {
+                        Marshal.WriteByte(ptr, row * eyes.Cols * 3 + col * 3 + 0, 255);
+                        Marshal.WriteByte(ptr, row * eyes.Cols * 3 + col * 3 + 1, 255);
+                        Marshal.WriteByte(ptr, row * eyes.Cols * 3 + col * 3 + 2, 255);
+                    }
+                }
+            }
+            Cv2.CvtColor(eyes, eyes, ColorConversionCodes.BGR2GRAY);
+
+            return eyes;
+        }
+
+        private void ProcessThreshold(Mat threshold)
+        {
+            Cv2.Erode(threshold, threshold, null, iterations: 2);
+            Cv2.Dilate(threshold, threshold, null, iterations: 4);
+            Cv2.MedianBlur(threshold, threshold, 3);
+            Cv2.BitwiseNot(threshold, threshold);
+        }
+
+        private OpenCvSharp.Point Contouring(Mat threshold, int mid, OpenCvSharp.Point[] endPoints)
+        {
+            Mat[] contours;
+            Mat none = new Mat();
+            Cv2.FindContours(threshold, out contours, none, RetrievalModes.External, ContourApproximationModes.ApproxNone);
+            int cx = (endPoints[0].X + endPoints[1].X) / 2;
+            int cy = (endPoints[0].Y + endPoints[1].Y) / 2;
+
+            if (contours.Length > 0)
+            {
+                Moments moments = Cv2.Moments(contours.Aggregate((c1, c2) => Cv2.ContourArea(c1) > Cv2.ContourArea(c2) ? c1 : c2));
+                cx = (int)(moments.M10 / moments.M00);
+                cy = (int)(moments.M01 / moments.M00);
+
+                if (mid < endPoints[0].X)
+                {
+                    cx += mid;
+                }
+            }
+            return new OpenCvSharp.Point(cx, cy);
+        }
+
+        private Direction PointToDirection(OpenCvSharp.Point eyeballPoint, OpenCvSharp.Point[] endPoints)
+        {
+            double xRatio = ((double)eyeballPoint.X - (double)endPoints[0].X) / ((double)endPoints[1].X - (double)endPoints[0].X);
+            double yRatio = ((double)eyeballPoint.Y - (double)endPoints[0].Y) / ((double)endPoints[1].Y - (double)endPoints[0].Y);
+
+            if (xRatio > 0.66)
+                return Direction.Left;
+            else if (xRatio < 0.33)
+                return Direction.Right;
+            else
+                return Direction.Center;
         }
     }
 }
