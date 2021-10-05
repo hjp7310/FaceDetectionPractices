@@ -26,5 +26,14 @@ namespace FaceDetectionPracticesUnitTest
             faceDetection.FaceCoordinate(img);
             img.SaveImage(@"output_FaceCoordinate.jpg");
         }
+
+        [TestMethod]
+        public void EyeTrackingTest()
+        {
+            Mat img = Cv2.ImRead("img.jpg");
+            var faceDetection = new FaceDetection();
+            faceDetection.EyeTracking(img);
+            img.SaveImage(@"output_EyeTracking.jpg");
+        }
     }
 }

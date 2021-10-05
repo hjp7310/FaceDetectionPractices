@@ -73,7 +73,7 @@ namespace FaceDetectionPractices
             {
                 using (var frame_mat = this.videoCapture.RetrieveMat())
                 {
-                    FaceInfo faceInfo = this.faceDetection.HeadPoseEstimate(frame_mat);
+                    FaceInfo faceInfo = this.faceDetection.EyeTracking(frame_mat);
                     if (faceInfo.coordinates != null && faceInfo.directions != null)
                     {
                         this.faceInfo = faceInfo;
