@@ -1,7 +1,7 @@
 ﻿
 namespace FaceDetectionPractices
 {
-    partial class CamForm
+    partial class WebCamForm
     {
         /// <summary>
         /// Required designer variable.
@@ -46,19 +46,19 @@ namespace FaceDetectionPractices
             // 
             this.backgroundWorker.WorkerReportsProgress = true;
             this.backgroundWorker.WorkerSupportsCancellation = true;
-            this.backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker_DoWork);
-            this.backgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker_ProgressChanged);
+            this.backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundWorker_DoWork);
+            this.backgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.BackgroundWorker_ProgressChanged);
             // 
-            // CamForm
+            // WebCamForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.pictureBox);
-            this.Name = "CamForm";
+            this.Name = "WebCamForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "CamForm";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.CamForm_FormClosing);
+            this.Text = "WebCamForm";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.WebCamForm_FormClosing);
             this.Load += new System.EventHandler(this.CamForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
             this.ResumeLayout(false);

@@ -32,7 +32,7 @@ namespace FaceDetectionPracticesUnitTest
         {
             Mat img = Cv2.ImRead("img.jpg");
             var faceDetection = new FaceDetection();
-            faceDetection.EyeTracking(img);
+            faceDetection.EyeTrack(img);
             img.SaveImage(@"output_EyeTracking.jpg");
         }
     }

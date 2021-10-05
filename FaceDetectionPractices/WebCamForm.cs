@@ -14,10 +14,11 @@ using System.Windows.Forms;
 
 namespace FaceDetectionPractices
 {
-    public partial class CamForm : Form
+    public partial class WebCamForm : Form
     {
         public event EventHandler coordinateChanged;
 
+        private AIOption aiOption;
         private FaceDetection faceDetection;
         private VideoCapture videoCapture;
 
@@ -31,14 +32,15 @@ namespace FaceDetectionPractices
                 {
                     this._faceInfo = value;
                 }
-                EventArgs args = new EventArgs();
+                WebcamCustomEventArgs args = new WebcamCustomEventArgs(_faceInfo);
                 this.coordinateChanged(null, args);
             }
         }
 
-        public CamForm()
+        public WebCamForm(AIOption aiOption)
         {
             InitializeComponent();
+            this.aiOption = aiOption;
         }
 
         private void CamForm_Load(object sender, EventArgs e)
@@ -59,13 +61,13 @@ namespace FaceDetectionPractices
             backgroundWorker.RunWorkerAsync();
         }
 
-        private void CamForm_FormClosing(object sender, FormClosingEventArgs e)
+        private void WebCamForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             backgroundWorker.CancelAsync();
             this.videoCapture?.Dispose();
         }
 
-        private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             var bg_worker = (BackgroundWorker)sender;
 
@@ -73,18 +75,32 @@ namespace FaceDetectionPractices
             {
                 using (var frame_mat = this.videoCapture.RetrieveMat())
                 {
-                    FaceInfo faceInfo = this.faceDetection.EyeTracking(frame_mat);
+                    FaceInfo faceInfo = null;
+                    switch (this.aiOption)
+                    {
+                        case AIOption.EyeTrack:
+                            faceInfo = this.faceDetection.EyeTrack(frame_mat, false);
+                            break;
+                        case AIOption.HeadCoordinate:
+                            faceInfo = this.faceDetection.FaceCoordinate(frame_mat, false);
+                            break;
+                        case AIOption.HeadPoseEstimate:
+                            faceInfo = this.faceDetection.HeadPoseEstimate(frame_mat, false);
+                            break;
+                        default:
+                            break;
+                    }
                     if (faceInfo.coordinates != null && faceInfo.directions != null)
                     {
                         this.faceInfo = faceInfo;
                     }
-                    bg_worker.ReportProgress(0, BitmapConverter.ToBitmap(faceInfo.img));
+                    bg_worker.ReportProgress(0, BitmapConverter.ToBitmap(this.faceInfo.img));
                 }
                 Thread.Sleep(100);
             }
         }
 
-        private void backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        private void BackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             var frame_bitmap = (Bitmap)e.UserState;
             pictureBox.Image?.Dispose();

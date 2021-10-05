@@ -7,6 +7,18 @@ using System.Threading.Tasks;
 
 namespace FaceDetectionPractices
 {
+    public enum AIOption { EyeTrack, HeadCoordinate, HeadPoseEstimate }
+
+    public class WebcamCustomEventArgs : EventArgs
+    {
+        public FaceInfo faceInfo { get; set; }
+
+        public WebcamCustomEventArgs(FaceInfo faceInfo)
+        {
+            this.faceInfo = faceInfo;
+        }
+    }
+
     public enum Direction { Up, Down, Left, Right, Center };
 
     public class FaceInfo

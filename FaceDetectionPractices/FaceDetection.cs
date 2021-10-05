@@ -22,10 +22,10 @@ namespace FaceDetectionPractices
             poseModel = ShapePredictor.Deserialize("shape_predictor_68_face_landmarks.dat");
         }
 
-        public FaceInfo HeadPoseEstimate(Mat img)
+        public FaceInfo HeadPoseEstimate(Mat img, bool is_multiple_faces = true)
         {
             Array2D<RgbPixel> cimg = MatToRgbArray2D(img);
-            FaceInfo faceInfo = new FaceInfo();
+            FaceInfo face_info = new FaceInfo();
 
             var faces = this.faceDetector.Operator(cimg);
             List<FullObjectDetection> shapes = new List<FullObjectDetection>();
@@ -33,7 +33,11 @@ namespace FaceDetectionPractices
             foreach (var face in faces)
             {
                 shapes.Add(this.poseModel.Detect(cimg, face));
-                faceInfo.coordinates.Add(new System.Drawing.Point(face.Center.X, face.Center.Y));
+                face_info.coordinates.Add(new System.Drawing.Point(face.Center.X, face.Center.Y));
+                if (is_multiple_faces == false)
+                {
+                    break;
+                }
             }
 
             foreach (var shape in shapes)
@@ -74,42 +78,50 @@ namespace FaceDetectionPractices
 
                     Cv2.SolvePnP(model_points, image_points, camera_matrix, dist_coeffs, ref rotation_vector, ref translation_vector);
 
-                    List<Point3f> nose_end_point3D = new List<Point3f>();
-                    Point2f[] nose_end_point2D;
+                    List<Point3f> nose_end_point3d = new List<Point3f>();
+                    Point2f[] nose_end_point2d;
 
-                    nose_end_point3D.Add(new Point3f(0f, 0f, 1000.0f));
+                    nose_end_point3d.Add(new Point3f(0f, 0f, 1000.0f));
                     double[,] jacobian;
-                    Cv2.ProjectPoints(nose_end_point3D, rotation_vector, translation_vector, camera_matrix, dist_coeffs.ToArray(), out nose_end_point2D, out jacobian);
+                    Cv2.ProjectPoints(nose_end_point3d, rotation_vector, translation_vector, camera_matrix, dist_coeffs.ToArray(), out nose_end_point2d, out jacobian);
 
                     for (int i = 0; i < image_points.Count; i++)
                     {
                         Cv2.Circle(img, new OpenCvSharp.Point(image_points[i].X, image_points[i].Y), 3, new Scalar(0, 0, 255), -1);
                     }
-                    Cv2.Line(img, new OpenCvSharp.Point(image_points[0].X, image_points[0].Y), new OpenCvSharp.Point(nose_end_point2D[0].X, nose_end_point2D[0].Y), new Scalar(255, 0, 0), 2);
-                    faceInfo.directions.Add(PointToDirection(new System.Drawing.Point((int)image_points[0].X, (int)image_points[0].Y), new System.Drawing.Point((int)nose_end_point2D[0].X, (int)nose_end_point2D[0].Y)));
+                    Cv2.Line(img, new OpenCvSharp.Point(image_points[0].X, image_points[0].Y), new OpenCvSharp.Point(nose_end_point2d[0].X, nose_end_point2d[0].Y), new Scalar(255, 0, 0), 2);
+                    face_info.directions.Add(PointToDirection(new System.Drawing.Point((int)image_points[0].X, (int)image_points[0].Y), new System.Drawing.Point((int)nose_end_point2d[0].X, (int)nose_end_point2d[0].Y)));
                 }
             }
 
-            faceInfo.img = img;
+            face_info.img = img;
             cimg.Dispose();
-            return faceInfo;
+            return face_info;
         }
 
-        public Mat FaceCoordinate(Mat img)
+        public FaceInfo FaceCoordinate(Mat img, bool is_multiple_faces = true)
         {
             Array2D<RgbPixel> cimg = MatToRgbArray2D(img);
-            
+            FaceInfo face_info = new FaceInfo();
+
             var faces = this.faceDetector.Operator(cimg);
             foreach (var face in faces)
             {
                 Cv2.Rectangle(img, new OpenCvSharp.Point(face.TopLeft.X, face.TopLeft.Y), new OpenCvSharp.Point(face.BottomRight.X, face.BottomRight.Y), new Scalar(0, 0, 255), 1);
+                face_info.coordinates.Add(new System.Drawing.Point(face.Center.X, face.Center.Y));
+                face_info.directions.Add(PointToDirection(new System.Drawing.Point((int)(img.Cols / 2), (int)(img.Rows / 2)), new System.Drawing.Point(face.Center.X, face.Center.Y)));
+                if (is_multiple_faces == false)
+                {
+                    break;
+                }
             }
 
+            face_info.img = img;
             cimg.Dispose();
-            return img;
+            return face_info;
         }
 
-        public FaceInfo EyeTracking(Mat img)
+        public FaceInfo EyeTrack(Mat img, bool is_multiple_faces = true)
         {
             Array2D<RgbPixel> cimg = MatToRgbArray2D(img);
             FaceInfo faceInfo = new FaceInfo();
@@ -121,6 +133,10 @@ namespace FaceDetectionPractices
             {
                 shapes.Add(this.poseModel.Detect(cimg, face));
                 faceInfo.coordinates.Add(new System.Drawing.Point(face.Center.X, face.Center.Y));
+                if (is_multiple_faces == false)
+                {
+                    break;
+                }
             }
 
             uint[] left_eye = new uint[] { 36, 37, 38, 39, 40, 41 };
@@ -185,13 +201,15 @@ namespace FaceDetectionPractices
             }
 
             faceInfo.img = img;
+            cimg.Dispose();
             return faceInfo;
         }
 
         private Direction PointToDirection(OpenCvSharp.Point eyeball_pos, int[] end_points)
         {
-            double x_ratio = ((double)end_points[0] - (double)eyeball_pos.X) / ((double)eyeball_pos.X - (double)end_points[2]);
-            double y_ratio = ((double)eyeball_pos.Y - (double)end_points[1]) / ((double)end_points[3] - (double)eyeball_pos.Y);
+            double x_ratio = ((double)eyeball_pos.X - (double)end_points[0]) / ((double)end_points[2] - (double)end_points[0]);
+            double y_ratio = ((double)eyeball_pos.Y - (double)end_points[1]) / ((double)end_points[3] - (double)end_points[1]);
+
             if (x_ratio > 0.66)
                 return Direction.Left;
             else if (x_ratio < 0.33)
