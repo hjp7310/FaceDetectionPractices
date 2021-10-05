@@ -69,23 +69,23 @@ namespace FaceDetectionPractices
 
         private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            var bg_worker = (BackgroundWorker)sender;
+            var bgWorker = (BackgroundWorker)sender;
 
-            while (!bg_worker.CancellationPending)
+            while (!bgWorker.CancellationPending)
             {
-                using (var frame_mat = this.videoCapture.RetrieveMat())
+                using (var frameMat = this.videoCapture.RetrieveMat())
                 {
                     FaceInfo faceInfo = null;
                     switch (this.aiOption)
                     {
                         case AIOption.EyeTrack:
-                            faceInfo = this.faceDetection.EyeTrack(frame_mat, false);
+                            faceInfo = this.faceDetection.EyeTrack(frameMat, false);
                             break;
                         case AIOption.HeadCoordinate:
-                            faceInfo = this.faceDetection.FaceCoordinate(frame_mat, false);
+                            faceInfo = this.faceDetection.FaceCoordinate(frameMat, false);
                             break;
                         case AIOption.HeadPoseEstimate:
-                            faceInfo = this.faceDetection.HeadPoseEstimate(frame_mat, false);
+                            faceInfo = this.faceDetection.HeadPoseEstimate(frameMat, false);
                             break;
                         default:
                             break;
@@ -94,7 +94,7 @@ namespace FaceDetectionPractices
                     {
                         this.faceInfo = faceInfo;
                     }
-                    bg_worker.ReportProgress(0, BitmapConverter.ToBitmap(this.faceInfo.img));
+                    bgWorker.ReportProgress(0, BitmapConverter.ToBitmap(this.faceInfo.img));
                 }
                 Thread.Sleep(100);
             }
@@ -102,9 +102,10 @@ namespace FaceDetectionPractices
 
         private void BackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            var frame_bitmap = (Bitmap)e.UserState;
+            var frameBitmap = (Bitmap)e.UserState;
+            frameBitmap.RotateFlip(RotateFlipType.RotateNoneFlipX);
             pictureBox.Image?.Dispose();
-            pictureBox.Image = frame_bitmap;
+            pictureBox.Image = frameBitmap;
         }
     }
 }
