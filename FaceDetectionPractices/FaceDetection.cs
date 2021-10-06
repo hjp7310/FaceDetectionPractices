@@ -183,9 +183,9 @@ namespace FaceDetectionPractices
                     Direction directionLeft = PointToDirection(eyeballPointLeft, endPointsLeft);
                     Direction directionRight = PointToDirection(eyeballPointRight, endPointsRight);
                     if (directionLeft == directionRight)
-                    {
                         faceInfo.directions.Add(directionLeft);
-                    }               
+                    else
+                        faceInfo.directions.Add(Direction.Error);
                 }
             }
 

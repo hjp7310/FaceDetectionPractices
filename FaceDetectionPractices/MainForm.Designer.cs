@@ -39,6 +39,7 @@ namespace FaceDetectionPractices
             // EyeTrackStartButton
             // 
             this.EyeTrackStartButton.Location = new System.Drawing.Point(650, 12);
+            this.EyeTrackStartButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.EyeTrackStartButton.Name = "EyeTrackStartButton";
             this.EyeTrackStartButton.Size = new System.Drawing.Size(160, 80);
             this.EyeTrackStartButton.TabIndex = 0;
@@ -48,7 +49,8 @@ namespace FaceDetectionPractices
             // 
             // StopButton
             // 
-            this.StopButton.Location = new System.Drawing.Point(650, 270);
+            this.StopButton.Location = new System.Drawing.Point(650, 264);
+            this.StopButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.StopButton.Name = "StopButton";
             this.StopButton.Size = new System.Drawing.Size(160, 80);
             this.StopButton.TabIndex = 1;
@@ -59,15 +61,17 @@ namespace FaceDetectionPractices
             // textBox
             // 
             this.textBox.Location = new System.Drawing.Point(12, 12);
+            this.textBox.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.textBox.Multiline = true;
             this.textBox.Name = "textBox";
             this.textBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox.Size = new System.Drawing.Size(632, 529);
+            this.textBox.Size = new System.Drawing.Size(632, 530);
             this.textBox.TabIndex = 2;
             // 
             // HeadCoordinateStartButton
             // 
-            this.HeadCoordinateStartButton.Location = new System.Drawing.Point(650, 98);
+            this.HeadCoordinateStartButton.Location = new System.Drawing.Point(650, 96);
+            this.HeadCoordinateStartButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.HeadCoordinateStartButton.Name = "HeadCoordinateStartButton";
             this.HeadCoordinateStartButton.Size = new System.Drawing.Size(160, 80);
             this.HeadCoordinateStartButton.TabIndex = 3;
@@ -77,7 +81,8 @@ namespace FaceDetectionPractices
             // 
             // HeadPoseEstimateStartButton
             // 
-            this.HeadPoseEstimateStartButton.Location = new System.Drawing.Point(650, 184);
+            this.HeadPoseEstimateStartButton.Location = new System.Drawing.Point(650, 180);
+            this.HeadPoseEstimateStartButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.HeadPoseEstimateStartButton.Name = "HeadPoseEstimateStartButton";
             this.HeadPoseEstimateStartButton.Size = new System.Drawing.Size(160, 80);
             this.HeadPoseEstimateStartButton.TabIndex = 4;
@@ -95,6 +100,7 @@ namespace FaceDetectionPractices
             this.Controls.Add(this.textBox);
             this.Controls.Add(this.StopButton);
             this.Controls.Add(this.EyeTrackStartButton);
+            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "MainForm";

@@ -55,8 +55,6 @@ namespace FaceDetectionPractices
                 return;
             }
 
-            pictureBox.Size = new System.Drawing.Size(this.videoCapture.FrameWidth, this.videoCapture.FrameHeight);
-            ClientSize = new System.Drawing.Size(pictureBox.Width + 20, pictureBox.Height + 20);
             StartPosition = FormStartPosition.CenterScreen;
             backgroundWorker.RunWorkerAsync();
         }
@@ -94,6 +92,7 @@ namespace FaceDetectionPractices
                     {
                         this.faceInfo = faceInfo;
                     }
+                    Cv2.Resize(this.faceInfo.img, this.faceInfo.img, new OpenCvSharp.Size(pictureBox.Width, pictureBox.Height), interpolation: InterpolationFlags.Area);
                     bgWorker.ReportProgress(0, BitmapConverter.ToBitmap(this.faceInfo.img));
                 }
                 Thread.Sleep(100);

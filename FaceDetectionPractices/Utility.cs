@@ -19,7 +19,7 @@ namespace FaceDetectionPractices
         }
     }
 
-    public enum Direction { Up, Down, Left, Right, Center };
+    public enum Direction { Up, Down, Left, Right, Center, Error };
 
     public class FaceInfo
     {

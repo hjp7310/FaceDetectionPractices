@@ -70,7 +70,7 @@ namespace FaceDetectionPractices
           {
               foreach (var coordinate in this.webCamForm?.faceInfo.coordinates)
               {
-                  textBox.AppendText("(" + coordinate.X.ToString() + ", " + coordinate.Y.ToString() + ") ");
+                  textBox.AppendText("Coordinate (" + coordinate.X.ToString() + ", " + coordinate.Y.ToString() + ") ");
               }
               foreach (var direction in this.webCamForm?.faceInfo.directions)
               {
