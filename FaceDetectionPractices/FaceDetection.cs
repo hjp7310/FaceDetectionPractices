@@ -166,26 +166,26 @@ namespace FaceDetectionPractices
                     OpenCvSharp.Point[] endPointsRight = EyeOnMask(mask, eyePointsRight, shape);  //(left, top), (right, bottom)
                     Cv2.Dilate(mask, mask, Mat.Ones(9, 9, MatType.CV_8UC1));
 
-                    Mat eyes = GrayScaleEyes(img, mask);
-
-                    Mat threshold = new Mat();
-                    int thresholdVal = 75;
-                    Cv2.Threshold(eyes, threshold, thresholdVal, 255, ThresholdTypes.Binary);
-                    ProcessThreshold(threshold);
+                    Mat eyes = MaskImage(img, mask);
+                    Cv2.CvtColor(eyes, eyes, ColorConversionCodes.BGR2GRAY);
 
                     int midCol = (int)((shape.GetPart(42).X + shape.GetPart(39).X) / 2);
-                    OpenCvSharp.Point eyeballPointLeft = Contouring(threshold.ColRange(0, midCol), midCol, endPointsLeft);
-                    OpenCvSharp.Point eyeballPointRight = Contouring(threshold.ColRange(midCol, threshold.Cols), midCol, endPointsRight);
+
+                    Mat thresholdLeft = OptimalThresholdImage(eyes.ColRange(0, midCol), mask.ColRange(0, midCol));
+                    Mat thresholdRight = OptimalThresholdImage(eyes.ColRange(midCol, eyes.Cols), mask.ColRange(midCol, mask.Cols));
+
+                    OpenCvSharp.Point eyeballPointLeft = Contouring(thresholdLeft, midCol, endPointsLeft);
+                    OpenCvSharp.Point eyeballPointRight = Contouring(thresholdRight, midCol, endPointsRight);
 
                     Cv2.Circle(img, new OpenCvSharp.Point(eyeballPointLeft.X, eyeballPointLeft.Y), 4, new Scalar(255, 0, 0), 2);
                     Cv2.Circle(img, new OpenCvSharp.Point(eyeballPointRight.X, eyeballPointRight.Y), 4, new Scalar(255, 0, 0), 2);
-
+                    
                     Direction directionLeft = PointToDirection(eyeballPointLeft, endPointsLeft);
                     Direction directionRight = PointToDirection(eyeballPointRight, endPointsRight);
                     if (directionLeft == directionRight)
                     {
                         faceInfo.directions.Add(directionLeft);
-                    }
+                    }               
                 }
             }
 
@@ -243,7 +243,7 @@ namespace FaceDetectionPractices
             return new OpenCvSharp.Point[] { topLeft, bottomRight };
         }
 
-        private Mat GrayScaleEyes(Mat img, Mat mask)
+        private Mat MaskImage(Mat img, Mat mask)
         {
             Mat eyes = Mat.Zeros(img.Size(), MatType.CV_8UC3);
             Cv2.BitwiseAnd(img, img, eyes, mask);
@@ -263,17 +263,49 @@ namespace FaceDetectionPractices
                     }
                 }
             }
-            Cv2.CvtColor(eyes, eyes, ColorConversionCodes.BGR2GRAY);
 
             return eyes;
         }
 
-        private void ProcessThreshold(Mat threshold)
+        private Mat OptimalThresholdImage(Mat eye, Mat mask)
         {
+            Mat threshold = ProcessThreshold(eye, 75);  //default
+            int eyeAreaSize = Cv2.CountNonZero(mask);
+
+            int thresholdValMax = 255;
+            int thresholdValMin = 0;
+            int thresholdVal;
+
+            while (thresholdValMax < thresholdValMin)
+            {
+                thresholdVal = (thresholdValMax + thresholdValMin) / 2;
+
+                threshold = ProcessThreshold(eye, thresholdVal);
+                int eyeThresholdSize = Cv2.CountNonZero(threshold);
+
+                double thresholdRatio = (double)eyeThresholdSize / (double)eyeAreaSize;
+                if (thresholdRatio > 0.2 && thresholdRatio < 0.3)
+                    break;
+                else if (thresholdRatio <= 0.2)
+                    thresholdValMin = thresholdVal + 1;
+                else
+                    thresholdValMax = thresholdVal - 1;
+            }
+
+            return threshold;
+        }
+
+        private Mat ProcessThreshold(Mat eyes, double thresholdVal)
+        {
+            Mat threshold = new Mat();
+            Cv2.Threshold(eyes, threshold, thresholdVal, 255, ThresholdTypes.Binary);
+
             Cv2.Erode(threshold, threshold, null, iterations: 2);
             Cv2.Dilate(threshold, threshold, null, iterations: 4);
             Cv2.MedianBlur(threshold, threshold, 3);
             Cv2.BitwiseNot(threshold, threshold);
+
+            return threshold;
         }
 
         private OpenCvSharp.Point Contouring(Mat threshold, int mid, OpenCvSharp.Point[] endPoints)
